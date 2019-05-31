@@ -146,7 +146,7 @@ gene_hash.keys.each do |gene_id|
   print "            a faldo:ReverseStrandPosition ;\n"
   end
   print "            faldo:position #{gene_hash[gene_id][4]} ;\n"
-  print "            faldo:reference hco:#{gene_hash[gene_id][3]}\#GRCh37\n"
+  print "            faldo:reference hco:#{gene_hash[gene_id][3]}\\#GRCh37\n"
   print "        ] ;\n"
   print "        faldo:end [\n"
   print "            a faldo:ExactPosition ;\n"
@@ -156,7 +156,7 @@ gene_hash.keys.each do |gene_id|
   print "            a faldo:ReverseStrandPosition ;\n"
   end
   print "            faldo:position #{gene_hash[gene_id][5]} ;\n"
-  print "            faldo:reference hco:#{gene_hash[gene_id][3]}\#GRCh37\n"
+  print "            faldo:reference hco:#{gene_hash[gene_id][3]}\\#GRCh37\n"
   print "        ]\n"
   print "    ] .\n"
   print "\n"

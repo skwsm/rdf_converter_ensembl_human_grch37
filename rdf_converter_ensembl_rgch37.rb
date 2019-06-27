@@ -82,20 +82,75 @@ module Ensembl
       @f_exons = open(file_name_2)
       @gene_keys = set_keys(@f_genes)
       @exon_keys = set_keys(@f_exons)
+      @gene_hash = {}
+      @exon_hash = {}
+      @gene2transcripts = {}
+      @transcript_hash = {}
+      parse
     end
 
     def set_keys(fh)
       ary = fh.gets.chomp.split("\t", -1)
-      ary.map{|e| e.gsub(/[()/]/, "").gsub(/[\/\s]/, "_").downcase}
+      ary.map{|e| e.gsub(/[()]/, "").gsub(/[\/\s]/, "_").downcase.to_sym}
     end
 
     def parse()
+      while line = @f_genes.gets
+        vals = line.chomp.split("\t", -1)
+        h = Hash[[@gene_keys, vals].transpose]
+        unless @gene_hash.key?(h[:gene_stable_id])
+          @gene_hash[h[:gene_stable_id]] = [h[:gene_name],
+                                            h[:gene_type],
+                                            h[:gene_description],
+                                            h[:chromosome_scaffold_name],
+                                            h[:gene_start_bp].to_i,
+                                            h[:gene_end_bp].to_i,
+                                            h[:strand].to_i,
+                                            h[:protein_stable_id],
+                                            h[:hgnc_id]]
+        end
+        unless @gene2transcripts.key?(h[:gene_stable_id])
+          @gene2transcripts[h[:gene_stable_id]] = [h[:transcript_stable_id]]
+        else
+          @gene2transcripts[h[:gene_stable_id]] << h[:transcript_stable_id]
+        end
+        unless @transcript_hash.key?(h[:transcript_stable_id])
+          @transcript_hash[h[:transcript_stable_id]] = [[h[:exon_stable_id]],
+                                                         h[:chromosome_scaffold_name],
+                                                         h[:transcript_start_bp].to_i,
+                                                         h[:transcript_end_bp].to_i,
+                                                         h[:strand].to_i]
+        else
+          @transcript_hash[h[:transcript_stable_id]][0] << h[:exon_stable_id]
+        end
+      end
+
+      while line = @f_exons.gets
+        vals = line.chomp.split("\t", -1)
+        h = Hash[[@exon_keys, vals].transpose]
+        unless @exon_hash.key?(h[:transcript_stable_id])
+          @exon_hash[h[:transcript_stable_id]] = [[h[:exon_stable_id],
+                                                   h[:exon_region_start_bp].to_i,
+                                                   h[:exon_region_end_bp].to_i,
+                                                   h[:exon_rank_in_transcript].to_i]]
+        else
+          @exon_hash[h[:transcript_stable_id]] << [h[:exon_stable_id],
+                                                   h[:exon_region_start_bp].to_i,
+                                                   h[:exon_region_end_bp].to_i,
+                                                   h[:exon_rank_in_transcript].to_i]
+        end
+      end
 
     end
 
   end
 
 end
+
+fg = ARGV.shift
+fe = ARGV.shift
+e = Ensembl::TSV.new(fg, fe)
+
 
 =begin
 

@@ -86,6 +86,7 @@ module Ensembl
       @gene_hash = {}
       @exon_hash = {}
       @gene2transcripts = {}
+      @transcript2protein = {}
       @transcript_hash = {}
       parse
     end
@@ -107,7 +108,6 @@ module Ensembl
                                             h[:gene_start_bp].to_i,
                                             h[:gene_end_bp].to_i,
                                             h[:strand].to_i,
-                                            h[:protein_stable_id],
                                             h[:hgnc_id]]
         end
         if @gene2transcripts.key?(h[:gene_stable_id])
@@ -116,6 +116,9 @@ module Ensembl
           end
         else
           @gene2transcripts[h[:gene_stable_id]] = [h[:transcript_stable_id]]
+        end
+        unless @transcript2protein.key?(h[:transcript_stabel_id])
+          @transcript2protein[h[:transcript_stable_id]] = h[:protein_stable_id]
         end
         unless @transcript_hash.key?(h[:transcript_stable_id])
           @transcript_hash[h[:transcript_stable_id]] = [[h[:exon_stable_id]],
@@ -186,7 +189,7 @@ module Ensembl
           print "    dcterms:identifier \"#{transcript_id}\" ;\n"
           print "    so:part_of ens:#{gene_id} ;\n"
           print "    so:transcribed_from ens:#{gene_id} ;\n"
-          print "    so:translates_to ensp:#{@transcript_hash[transcript_id][7]} ;\n" unless @transcript_hash[transcript_id][6] == ""
+          print "    so:translates_to ensp:#{@transcript2protein[transcript_id]} ;\n" unless @transcript2protein[transcript_id] == ""
           print "    faldo:location [\n"
           print "        a faldo:Region ;\n"
           print "        faldo:begin [\n"

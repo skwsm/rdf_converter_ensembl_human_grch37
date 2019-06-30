@@ -16,6 +16,8 @@ module Ensembl
      "term: <http://rdf.ebi.ac.uk/terms/ensembl/>",
      "identifiers: <http://identifiers.org/>",
      "obo: <http://purl.obolibrary.org/obo/>",
+     "taxon: <http://identifiers.org/taxonomy/>",
+     "hgnc: <http://identifiers.org/hgnc/>",
      "so: <http://purl.obolibrary.org/obo/so#>",
      "sio: <http://semanticscience.org/resource/>"
     ].each {|uri| print "@prefix #{uri} .\n"}
@@ -155,7 +157,9 @@ module Ensembl
         print "    a obo:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
         print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
         print "    dcterms:identifier \"#{gene_id}\" ;\n"
-        print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ;\n"
+        print "    obo:RO_0002162 taxon:9606 ;\n"
+        print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ,\n"
+        print "                 hgnc:HGNC_#{@gene_hash[gene_id][7]}> ;\n"
         print "    so:part_of <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
         print "    faldo:location [\n"
         print "        a faldo:Region ;\n"

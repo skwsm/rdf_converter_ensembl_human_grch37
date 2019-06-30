@@ -159,7 +159,7 @@ module Ensembl
         print "    dcterms:identifier \"#{gene_id}\" ;\n"
         print "    obo:RO_0002162 taxon:9606 ;\n"
         print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ,\n"
-        print "                 hgnc:HGNC_#{@gene_hash[gene_id][7]}> ;\n"
+        print "                 hgnc:HGNC_#{@gene_hash[gene_id][7]} ;\n"
         print "    so:part_of <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
         print "    faldo:location [\n"
         print "        a faldo:Region ;\n"

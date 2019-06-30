@@ -74,6 +74,7 @@ module Ensembl
   "unprocessed_pseudogene", "",
   "vaultRNA", "" ]]
 
+  ENST = "http://rdf.ebi.ac.uk/resource/ensembl.transcript/"
 
   class TSV
 
@@ -109,10 +110,12 @@ module Ensembl
                                             h[:protein_stable_id],
                                             h[:hgnc_id]]
         end
-        unless @gene2transcripts.key?(h[:gene_stable_id])
-          @gene2transcripts[h[:gene_stable_id]] = [h[:transcript_stable_id]]
+        if @gene2transcripts.key?(h[:gene_stable_id])
+          unless @gene2transcripts[h[:gene_stable_id]].include?(h[:transcript_stable_id])
+            @gene2transcripts[h[:gene_stable_id]] << h[:transcript_stable_id]
+          end
         else
-          @gene2transcripts[h[:gene_stable_id]] << h[:transcript_stable_id]
+          @gene2transcripts[h[:gene_stable_id]] = [h[:transcript_stable_id]]
         end
         unless @transcript_hash.key?(h[:transcript_stable_id])
           @transcript_hash[h[:transcript_stable_id]] = [[h[:exon_stable_id]],
@@ -140,17 +143,126 @@ module Ensembl
                                                    h[:exon_rank_in_transcript].to_i]
         end
       end
-
     end
 
+    def rdf()
+      exon_used = []
+      @gene_hash.keys.each do |gene_id|
+        print "ens:#{gene_id} a term:#{@gene_hash[gene_id][1]} ;\n"
+        print "    a obo:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
+        print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
+        print "    dcterms:identifier \"#{gene_id}\" ;\n"
+        print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ;\n"
+        print "    so:part_of <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+        print "    faldo:location [\n"
+        print "        a faldo:Region ;\n"
+        print "        faldo:begin [\n"
+        print "            a faldo:ExactPosition ;\n"
+        if @gene_hash[gene_id][6] == 1
+          print "            a faldo:ForwardStrandPosition ;\n"
+        else
+          print "            a faldo:ReverseStrandPosition ;\n"
+        end
+        print "            faldo:position #{@gene_hash[gene_id][4]} ;\n"
+        #  print "            faldo:reference hco:#{gene_hash[gene_id][3]}\\#GRCh37\n"
+        print "            faldo:reference <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+        print "        ] ;\n"
+        print "        faldo:end [\n"
+        print "            a faldo:ExactPosition ;\n"
+        if @gene_hash[gene_id][6] == 1
+          print "            a faldo:ForwardStrandPosition ;\n"
+        else
+          print "            a faldo:ReverseStrandPosition ;\n"
+        end
+        print "            faldo:position #{@gene_hash[gene_id][5]} ;\n"
+        #  print "            faldo:reference hco:#{gene_hash[gene_id][3]}\\#GRCh37\n"
+        print "            faldo:reference <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+        print "        ]\n"
+        print "    ] .\n"
+        print "\n"
+        @gene2transcripts[gene_id].each do |transcript_id|
+          print "enst:#{transcript_id} a term:#{@gene_hash[gene_id][1]} ;\n"
+          print "    a ens:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
+          print "    dcterms:identifier \"#{transcript_id}\" ;\n"
+          print "    so:part_of ens:#{gene_id} ;\n"
+          print "    so:transcribed_from ens:#{gene_id} ;\n"
+          print "    so:translates_to ensp:#{@transcript_hash[transcript_id][7]} ;\n" unless @transcript_hash[transcript_id][6] == ""
+          print "    faldo:location [\n"
+          print "        a faldo:Region ;\n"
+          print "        faldo:begin [\n"
+          print "            a faldo:ExactPosition ;\n"
+          if @gene_hash[gene_id][6] == 1
+            print "            a faldo:ForwardStrandPosition ;\n"
+          else
+            print "            a faldo:ReverseStrandPosition ;\n"
+          end
+          print "            faldo:position #{@transcript_hash[transcript_id][2]} ;\n"
+          print "            faldo:reference <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+          print "        ] ;\n"
+          print "        faldo:end [\n"
+          print "            a faldo:ExactPosition ;\n"
+          if @gene_hash[gene_id][6] == 1
+            print "            a faldo:ForwardStrandPosition ;\n"
+          else
+            print "            a faldo:ReverseStrandPosition ;\n"
+          end
+          print "            faldo:position #{@transcript_hash[transcript_id][3]} ;\n"
+          print "            faldo:reference <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+          print "        ]\n"
+          print "    ] .\n"
+          print "\n"
+          @exon_hash[transcript_id].each do |exon|
+            print "enst:#{transcript_id} so:has_part ense:#{exon[0]} .\n"
+            print "enst:#{transcript_id} sio:SIO_000974 <#{ENST}#{transcript_id}#Exon_#{exon[3]}> .\n"
+            print "<#{ENST}#{transcript_id}#Exon_#{exon[3]}> a sio:SIO_001261 ;\n"
+            print "    sio:SIO_000628 ense:#{exon[0]} ;\n"
+            print "    sio:SIO_000300 #{exon[3]} .\n"
+            print "\n"
+            unless exon_used.include?(exon[0])
+            exon_used << exon[0]
+            print "ense:#{exon[0]} a obo:SO_0000147 ;\n" # so:exon
+            print "    rdfs:label \"#{exon[0]}\" ;\n"
+            print "    dcterms:identifiers \"#{exon[0]}\" ;\n"
+            print "    so:part_of enst:#{transcript_id} ;\n"
+            print "    faldo:location [\n"
+            print "        a faldo:Region ;\n"
+            print "        faldo:begin [\n"
+            print "            a faldo:ExactPosition ;\n"
+            if @gene_hash[gene_id][6] == 1
+              print "            a faldo:ForwardStrandPosition ;\n"
+            else
+              print "            a faldo:ReverseStrandPosition ;\n"
+            end
+            print "            faldo:position #{exon[1]} ;\n"
+            print "            faldo:reference <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+            print "        ] ;\n"
+            print "        faldo:end [\n"
+            print "            a faldo:ExactPosition ;\n"
+            if @gene_hash[gene_id][6] == 1
+              print "            a faldo:ForwardStrandPosition ;\n"
+            else
+              print "            a faldo:ReverseStrandPosition ;\n"
+            end
+            print "            faldo:position #{exon[2]} ;\n"
+            print "            faldo:reference <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+            print "        ] \n"
+            print "    ] .\n"
+            print "\n"
+            end
+          end
+        end
+        print "<http://identifiers.org/ensembl/#{gene_id}> a identifiers:ensembl .\n"
+        print "\n"
+      end
+    end # end of rdf()
   end
-
-end
+end # end of Module
 
 fg = ARGV.shift
 fe = ARGV.shift
 e = Ensembl::TSV.new(fg, fe)
-
+Ensembl.prefixes
+e.rdf()
 
 =begin
 

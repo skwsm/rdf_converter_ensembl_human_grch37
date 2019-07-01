@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'optparse'
 
 module Ensembl
 
@@ -265,9 +266,20 @@ module Ensembl
   end
 end # end of Module
 
-fg = ARGV.shift
-fe = ARGV.shift
-e = Ensembl::TSV.new(fg, fe)
-Ensembl.prefixes
-e.rdf()
+params = ARGV.getopts('g:e:d:o:', 'gene:', 'exon:', 'dir:')
+if (params["g"] || params["gene"]) && (params["e"] || params["exon"])
+  e = Ensembl::TSV.new(params["g"], params["e"])
+  Ensembl.prefixes
+  e.rdf()
+else
+  exit
+end
+
+
+
+#fg = ARGV.shift
+#fe = ARGV.shift
+#e = Ensembl::TSV.new(fg, fe)
+#Ensembl.prefixes
+#e.rdf()
 

@@ -20,7 +20,8 @@ module Ensembl
      "taxon: <http://identifiers.org/taxonomy/>",
      "hgnc: <http://identifiers.org/hgnc/>",
      "so: <http://purl.obolibrary.org/obo/so#>",
-     "sio: <http://semanticscience.org/resource/>"
+     "sio: <http://semanticscience.org/resource/>",
+     "up: <http://purl.uniprot.org/uniprot/>"
     ].each {|uri| print "@prefix #{uri} .\n"}
     print "\n"
   end
@@ -81,22 +82,55 @@ module Ensembl
 
   class TSV
 
-    def initialize(file_name_1, file_name_2)
+    def initialize(file_name_1, file_name_2, file_name_3)
       @f_genes = open(file_name_1)
       @f_exons = open(file_name_2)
+      @f_extl  = open(file_name_3)
       @gene_keys = set_keys(@f_genes)
       @exon_keys = set_keys(@f_exons)
+      @extl_keys = set_keys(@f_extl)
       @gene_hash = {}
       @exon_hash = {}
+      @extl_hash = {}
       @gene2transcripts = {}
       @transcript2protein = {}
       @transcript_hash = {}
+      @gene2extls = {}
+      @transcript2extls = {}
+      STDERR.print "#{@extl_keys.join(' ')}\n"
+      STDERR.print "parse external links ....\n"
+      parse_external_links
+      STDERR.print "parse ....\n"
       parse
+      STDERR.print "rdf ....\n"
     end
 
     def set_keys(fh)
       ary = fh.gets.chomp.split("\t", -1)
-      ary.map{|e| e.gsub(/[()]/, "").gsub(/[\/\s]/, "_").downcase.to_sym}
+      ary.map{|e| e.gsub(/[()]/, "").gsub(/[\/\-\s]/, "_").downcase.to_sym}
+    end
+
+    def parse_external_links()
+      while line = @f_extl.gets
+        vals = line.chomp.split("\t", -1)
+        h = Hash[[@extl_keys, vals].transpose]
+        @gene2extls[h[:gene_stable_id]] = h[:hgnc_id] unless h[:hgnc_id] == ""
+        unless h[:uniprotkb_swiss_prot_id] == ""
+          if @transcript2extls.key?(h[:transcript_stable_id])
+            @transcript2extls[h[:transcript_stable_id]] << h[:uniprotkb_swissprot_id]
+          else
+            @transcript2extls[h[:transcript_stable_id]] = [h[:uniprotkb_swissprot_id]]
+          end
+        end
+        unless h[:uniprotkb_trembl_id] == ""
+          if @transcript2extls.key?(h[:transcript_stable_id])
+            @transcript2extls[h[:transcript_stable_id]] << h[:uniprotkb_trembl_id]
+          else
+            @transcript2extls[h[:transcript_stable_id]] = [h[:uniprotkb_trembl_id]]
+          end
+        end
+#        STDERR.print "#{h}"
+      end
     end
 
     def parse()
@@ -110,8 +144,7 @@ module Ensembl
                                             h[:chromosome_scaffold_name],
                                             h[:gene_start_bp].to_i,
                                             h[:gene_end_bp].to_i,
-                                            h[:strand].to_i,
-                                            h[:hgnc_id]]
+                                            h[:strand].to_i]
         end
         if @gene2transcripts.key?(h[:gene_stable_id])
           unless @gene2transcripts[h[:gene_stable_id]].include?(h[:transcript_stable_id])
@@ -159,9 +192,14 @@ module Ensembl
         print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
         print "    dcterms:identifier \"#{gene_id}\" ;\n"
         print "    obo:RO_0002162 taxon:9606 ;\n"
-        print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ,\n"
-        print "                 hgnc:HGNC_#{@gene_hash[gene_id][7]} ;\n"
+        if @gene2extls.key?(gene_id)
+          print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ,\n"
+          print "                 hgnc:HGNC_#{@gene2extls[gene_id]} ;\n"
+        else
+          print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ;\n"
+        end
         print "    so:part_of <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
+        print "    obo:BFO_0000050 <http://identifiers.org/hco/#{@gene_hash[gene_id][3]}#GRCh37> ;\n"
         print "    faldo:location [\n"
         print "        a faldo:Region ;\n"
         print "        faldo:begin [\n"
@@ -192,9 +230,13 @@ module Ensembl
           print "enst:#{transcript_id} a term:#{@gene_hash[gene_id][1]} ;\n"
           print "    a ens:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
           print "    dcterms:identifier \"#{transcript_id}\" ;\n"
+          print "    obo:BFO_0000050 ens:#{gene_id} ;\n"
           print "    so:part_of ens:#{gene_id} ;\n"
           print "    so:transcribed_from ens:#{gene_id} ;\n"
           print "    so:translates_to ensp:#{@transcript2protein[transcript_id]} ;\n" unless @transcript2protein[transcript_id] == ""
+          if @transcript2extls.key?(transcript_id)
+            print "      rdfs:seeAlso #{@transcript2extls[transcript_id].map{|e| "up:#{e}"}.join(", ")} ;\n"
+          end
           print "    faldo:location [\n"
           print "        a faldo:Region ;\n"
           print "        faldo:begin [\n"
@@ -221,6 +263,7 @@ module Ensembl
           print "\n"
           @exon_hash[transcript_id].each do |exon|
             print "enst:#{transcript_id} so:has_part ense:#{exon[0]} .\n"
+            print "enst:#{transcript_id} obo:BFO_0000051 ense:#{exon[0]} .\n"
             print "enst:#{transcript_id} sio:SIO_000974 <#{ENST}#{transcript_id}#Exon_#{exon[3]}> .\n"
             print "<#{ENST}#{transcript_id}#Exon_#{exon[3]}> a sio:SIO_001261 ;\n"
             print "    sio:SIO_000628 ense:#{exon[0]} ;\n"
@@ -232,6 +275,7 @@ module Ensembl
             print "    rdfs:label \"#{exon[0]}\" ;\n"
             print "    dcterms:identifiers \"#{exon[0]}\" ;\n"
             print "    so:part_of enst:#{transcript_id} ;\n"
+            print "    obo:BFO_0000050 enst:#{transcript_id} ;\n"
             print "    faldo:location [\n"
             print "        a faldo:Region ;\n"
             print "        faldo:begin [\n"
@@ -270,16 +314,25 @@ def help
   print "Usage: ruby rdf_converter_ensembl_rgch37.rb [options]\n"
   print "  -g, --gene path to the file for gene structures\n"
   print "  -e, --exon path to the file for exon structures\n"
+  print "  -x, --xlink path to the file for cross links\n"
 end
 
-params = ARGV.getopts('g:e:d:o:', 'gene:', 'exon:', 'dir:')
-if (params["g"] || params["gene"]) && (params["e"] || params["exon"])
-  e = Ensembl::TSV.new(params["g"], params["e"])
-  Ensembl.prefixes
-  e.rdf()
-else
-  help
-  exit
+params = ARGV.getopts('g:e:d:o:x:', 'gene:', 'exon:', 'dir:', 'xlink')
+if (params["g"] || params["gene"]) && (params["e"] || params["exon"]) && (params["x"] || params["xlink"])
+  if (params["g"])
+    e = Ensembl::TSV.new(params["g"], params["e"], params["x"])
+    Ensembl.prefixes
+    e.rdf
+    exit
+  elsif (params["gene"])
+    e = Ensembl::TSV.new(params["gene"], params["exon"], params["xlink"])
+    Ensembl.prefixes
+    e.rdf
+    exit
+  else
+    help
+    exit
+  end
 end
 
 

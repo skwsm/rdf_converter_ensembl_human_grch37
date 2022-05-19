@@ -38,6 +38,7 @@ module Ensembl
   "IG_J_pseudogene", "",
   "IG_V_gene", "",
   "IG_V_pseudogene", "",
+  "lncRNA", "SO_0001463",
   "lincRNA", "SO_0001641",
   "LRG_gene", "",
   "macro_lncRNA", "",
@@ -317,7 +318,7 @@ def help
   print "  -x, --xlink path to the file for cross links\n"
 end
 
-params = ARGV.getopts('g:e:d:o:x:', 'gene:', 'exon:', 'dir:', 'xlink')
+params = ARGV.getopts('g:e:d:o:x:h:', 'gene:', 'exon:', 'dir:', 'xlink:', 'grch:')
 if (params["g"] || params["gene"]) && (params["e"] || params["exon"]) && (params["x"] || params["xlink"])
   if (params["g"])
     e = Ensembl::TSV.new(params["g"], params["e"], params["x"])

@@ -12,6 +12,7 @@ module Ensembl
      "enst: <http://rdf.ebi.ac.uk/resource/ensembl.transcript/>",
      "ense: <http://rdf.ebi.ac.uk/resource/ensembl.exon/>",
      "rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+     "dc: <http://purl.org/dc/elements/1.1/>",
      "dcterms: <http://purl.org/dc/terms/>",
      "ensgido: <http://identifiers.org/ensembl/>",
      "term: <http://rdf.ebi.ac.uk/terms/ensembl/>",
@@ -192,6 +193,7 @@ module Ensembl
         print "    a obo:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
         print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
         print "    dcterms:identifier \"#{gene_id}\" ;\n"
+        print "    dc:description \"#{@gene_hash[gene_id][2]}\" ;\n"
         print "    obo:RO_0002162 taxon:9606 ;\n"
         if @gene2extls.key?(gene_id)
           print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ,\n"

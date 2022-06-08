@@ -290,7 +290,7 @@ module Ensembl
             exon_used << exon[0]
             print "ense:#{exon[0]} a obo:SO_0000147 ;\n" # so:exon
             print "    rdfs:label \"#{exon[0]}\" ;\n"
-            print "    dcterms:identifiers \"#{exon[0]}\" ;\n"
+            print "    dcterms:identifier \"#{exon[0]}\" ;\n"
             print "    so:part_of enst:#{transcript_id} ;\n"
             print "    obo:BFO_0000050 enst:#{transcript_id} ;\n"
             print "    faldo:location [\n"

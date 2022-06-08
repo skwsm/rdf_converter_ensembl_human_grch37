@@ -28,57 +28,67 @@ module Ensembl
   end
   module_function :prefixes
 
-  Term2SO = Hash[*[
-  "3prime_overlapping_ncrna", "",
-  "antisense", "",
-  "bidirectional_promoter_lncrna", "",
-  "IG_C_gene", "",
-  "IG_C_pseudogene", "",
-  "IG_D_gene", "SO_0000510",
-  "IG_J_gene", "",
-  "IG_J_pseudogene", "",
-  "IG_V_gene", "",
-  "IG_V_pseudogene", "",
-  "lncRNA", "SO_0001463",
-  "lincRNA", "SO_0001641",
-  "LRG_gene", "",
-  "macro_lncRNA", "",
+  Term2SO_gene = Hash[*[
+  "IG_C_gene", "SO_0002123",
+  "IG_C_pseudogene", "SO_0002100",
+  "IG_D_gene", "SO_0002124",
+  "IG_J_gene", "SO_0002125",
+  "IG_J_pseudogene", "SO_0002101",
+  "IG_pseudogene", "SO_0002098",
+  "IG_V_gene", "SO_0002126",
+  "IG_V_pseudogene", "SO_0002102",
+  "lncRNA", "SO_0002127",
   "miRNA", "SO_0001265",
-  "misc_RNA", "SO_0000356",
-  "Mt_rRNA", "",
+  "misc_RNA", "SO_0001263",
+  "Mt_rRNA", "SO_0002363",
   "Mt_tRNA", "SO_0000088",
-  "non_coding", "",
-  "nonsense_mediated_decay", "SO_0001621",
-  "non_stop_decay", "",
-  "polymorphic_pseudogene", "SO_0000336",
-  "processed_pseudogene", "",
-  "processed_transcript", "SO_0001503",
-  "protein", "",
+  "polymorphic_pseudogene", "SO_0001841",
+  "processed_pseudogene", "SO_0000043",
   "protein_coding", "SO_0001217",
   "pseudogene", "SO_0000336",
-  "retained_intron", "SO_0000681",
-  "ribozyme", "",
+  "ribozyme", "SO_0002181",
   "rRNA", "SO_0001637",
-  "scaRNA", "",
-  "sense_intronic", "",
-  "sense_overlapping", "",
+  "rRNA_pseudogene", "SO_0000777",
+  "scaRNA", "SO_0002339",
+  "scRNA", "SO_0001266",
   "snoRNA", "SO_0001267",
   "snRNA", "SO_0001268",
-  "sRNA", "",
-  "TEC", "",
-  "transcribed_processed_pseudogene", "",
-  "transcribed_unitary_pseudogene", "",
-  "transcribed_unprocessed_pseudogene", "",
-  "translated_unprocessed_pseudogene", "",
-  "TR_C_gene", "SO_0000478",
-  "TR_D_gene", "",
-  "TR_J_gene", "SO_0000470",
-  "TR_J_pseudogene", "",
-  "TR_V_gene", "SO_0000466",
-  "TR_V_pseudogene", "",
-  "unitary_pseudogene", "",
-  "unprocessed_pseudogene", "",
-  "vaultRNA", "" ]]
+  "sRNA", "SO_0002342",
+  "transcribed_processed_pseudogene", "SO_0002109",
+  "transcribed_unitary_pseudogene", "SO_0002108",
+  "transcribed_unprocessed_pseudogene", "SO_0002107",
+  "translated_processed_pseudogene", "SO_0002105",
+  "translated_unprocessed_pseudogene", "SO_0002106",
+  "TR_C_gene", "SO_0002134",
+  "TR_D_gene", "SO_0002135",
+  "TR_J_gene", "SO_0002136",
+  "TR_J_pseudogene", "SO_0002104",
+  "TR_V_gene", "SO_0002137",
+  "TR_V_pseudogene", "SO_0002103",
+  "unitary_pseudogene", "SO_0001759",
+  "unprocessed_pseudogene", "SO_0001760",
+  "vault_RNA", "SO_0002358"]]
+
+  Term2SO_transcript = Hash[*[
+  "lncRNA", "SO_0001877",
+  "miRNA", "SO_0000276",
+  "misc_RNA", "SO_0000655",
+  "Mt_rRNA", "SO_0002128",
+  "Mt_tRNA", "SO_0002129",
+  "nonsense_mediated_decay", "SO_0002114",
+  "non_stop_decay", "SO_0002130",
+  "processed_transcript", "SO_0001503",
+  "protein_coding", "SO_0000234",
+  "retained_intron", "SO_0000681",
+  "ribozyme", "SO_0000374",
+  "rRNA", "SO_0000252",
+  "scaRNA", "SO_0002095",
+  "scRNA", "SO_0000013",
+  "snoRNA", "SO_0000275",
+  "snRNA", "SO_0000274",
+  "sRNA", "SO_0002247",
+  "TEC", "SO_0002139",
+  "vault_RNA", "SO_0000404"]]
 
   ENST = "http://rdf.ebi.ac.uk/resource/ensembl.transcript/"
 
@@ -163,7 +173,10 @@ module Ensembl
                                                          h[:chromosome_scaffold_name],
                                                          h[:transcript_start_bp].to_i,
                                                          h[:transcript_end_bp].to_i,
-                                                         h[:strand].to_i]
+                                                         h[:strand].to_i,
+                                                         h[:transcript_name],
+                                                         h[:transcript_type]
+                                                       ]
         else
           @transcript_hash[h[:transcript_stable_id]][0] << h[:exon_stable_id]
         end
@@ -190,7 +203,7 @@ module Ensembl
       exon_used = []
       @gene_hash.keys.each do |gene_id|
         print "ens:#{gene_id} a term:#{@gene_hash[gene_id][1]} ;\n"
-        print "    a obo:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
+        print "    a obo:#{Term2SO_gene[@gene_hash[gene_id][1]]} ;\n" if Term2SO_gene.key?(@gene_hash[gene_id][1])
         print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
         print "    dcterms:identifier \"#{gene_id}\" ;\n"
         print "    dc:description \"#{@gene_hash[gene_id][2]}\" ;\n"
@@ -230,8 +243,8 @@ module Ensembl
         print "    ] .\n"
         print "\n"
         @gene2transcripts[gene_id].each do |transcript_id|
-          print "enst:#{transcript_id} a term:#{@gene_hash[gene_id][1]} ;\n"
-          print "    a ens:#{Term2SO[@gene_hash[gene_id][1]]} ;\n" unless Term2SO[@gene_hash[gene_id][1]] == ""
+          print "enst:#{transcript_id} a term:#{@transcript_hash[transcript_id][6]} ;\n"
+          print "    a ens:#{Term2SO_transcript[@transcript_hash[transcript_id][6]]} ;\n" if Term2SO_transcript.key?(@transcript_hash[transcript_id][6])
           print "    dcterms:identifier \"#{transcript_id}\" ;\n"
           print "    obo:BFO_0000050 ens:#{gene_id} ;\n"
           print "    so:part_of ens:#{gene_id} ;\n"

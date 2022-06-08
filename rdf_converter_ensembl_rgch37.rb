@@ -246,6 +246,7 @@ module Ensembl
           print "enst:#{transcript_id} a term:#{@transcript_hash[transcript_id][6]} ;\n"
           print "    a ens:#{Term2SO_transcript[@transcript_hash[transcript_id][6]]} ;\n" if Term2SO_transcript.key?(@transcript_hash[transcript_id][6])
           print "    dcterms:identifier \"#{transcript_id}\" ;\n"
+          print "    rdfs:label \"#{@transcript_hash[transcript_id][5]}\" ;\n"
           print "    obo:BFO_0000050 ens:#{gene_id} ;\n"
           print "    so:part_of ens:#{gene_id} ;\n"
           print "    so:transcribed_from ens:#{gene_id} ;\n"

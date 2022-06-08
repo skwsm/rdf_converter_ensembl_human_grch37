@@ -336,7 +336,7 @@ module Ensembl
 end # end of Module
 
 def help
-  print "Usage: ruby rdf_converter_ensembl_rgch37.rb [options]\n"
+  print "Usage: ruby rdf_converter_ensembl_grch37.rb [options]\n"
   print "  -g, --gene path to the file for gene structures\n"
   print "  -e, --exon path to the file for exon structures\n"
   print "  -x, --xlink path to the file for cross links\n"

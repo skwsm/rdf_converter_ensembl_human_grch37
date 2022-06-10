@@ -203,11 +203,7 @@ module Ensembl
       @gene_hash.keys.each do |gene_id|
         print "ens:#{gene_id} a term:#{@gene_hash[gene_id][1]} ;\n"
         print "    a obo:#{Term2SO_gene[@gene_hash[gene_id][1]]} ;\n" if Term2SO_gene.key?(@gene_hash[gene_id][1])
-        if @gene_hash[gene_id][0] == ""
-          print "    rdfs:label \"#{gene_id}\" ;\n"
-        else
-          print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
-        end
+        print "    rdfs:label \"#{@gene_hash[gene_id][0]}\" ;\n"
         print "    dcterms:identifier \"#{gene_id}\" ;\n"
         print "    dcterms:description \"#{@gene_hash[gene_id][2]}\" ;\n"
         print "    obo:RO_0002162 taxon:9606 ;\n"
@@ -249,11 +245,7 @@ module Ensembl
           print "enst:#{transcript_id} a term:#{@transcript_hash[transcript_id][6]} ;\n"
           print "    a ens:#{Term2SO_transcript[@transcript_hash[transcript_id][6]]} ;\n" if Term2SO_transcript.key?(@transcript_hash[transcript_id][6])
           print "    dcterms:identifier \"#{transcript_id}\" ;\n"
-          if @transcript_hash[transcript_id][5] == ""
-            print "    rdfs:label \"#{transcript_id}\" ;\n"
-          else
-            print "    rdfs:label \"#{@transcript_hash[transcript_id][5]}\" ;\n"
-          end
+          print "    rdfs:label \"#{@transcript_hash[transcript_id][5]}\" ;\n"
           print "    obo:BFO_0000050 ens:#{gene_id} ;\n"
           print "    so:part_of ens:#{gene_id} ;\n"
           print "    so:transcribed_from ens:#{gene_id} ;\n"

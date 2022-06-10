@@ -8,17 +8,17 @@
 
 ### Input files
 
-First argument is a tab-delimited file exported from Ensembl Mart service, whose header line is blow.
+First argument is a tab-delimited file exported from Ensembl Mart service, whose header line is below.
 
-    Gene stable ID  Transcript stable ID    Protein stable ID       Exon stable ID  Gene name       Gene description        Transcript name Chromosome/scaffold name        Gene start (bp) Gene end (bp)   Strand  Transcript start (bp)   Transcript end (bp)     Gene type
+    Gene stable ID  Transcript stable ID    Protein stable ID       Exon stable ID  Gene name       Gene description        Transcript name Chromosome/scaffold name        Gene start (bp) Gene end (bp)   Strand  Transcript start (bp)   Transcript end (bp)     Gene type   Transcript type
 
 
-Second argument is a tab-delimited file exported from Ensembl Mart service, whose header line is blow.
+Second argument is a tab-delimited file exported from Ensembl Mart service, whose header line is below.
 
     Gene stable ID  Transcript stable ID    Exon stable ID  Exon region start (bp)  Exon region end (bp)    Exon rank in transcript
 
-Third argument is a tab-delimited file exported from Ensembl Mart service, whose header line is blow.
+Third argument is a tab-delimited file exported from Ensembl Mart service, whose header line is below.
 
     Gene stable ID  Transcript stable ID    HGNC ID UniProtKB/Swiss-Prot ID UniProtKB/TrEMBL ID
 
-Ensembl BioMart service for GRCh37 is availele at [here](https://grch37.ensembl.org/biomart/martview).
+Ensembl BioMart service for GRCh37 is available at [here](https://grch37.ensembl.org/biomart/martview).

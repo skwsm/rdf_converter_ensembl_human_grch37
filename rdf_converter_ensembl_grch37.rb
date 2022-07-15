@@ -125,7 +125,7 @@ module Ensembl
       while line = @f_extl.gets
         vals = line.chomp.split("\t", -1)
         h = Hash[[@extl_keys, vals].transpose]
-        @gene2extls[h[:gene_stable_id]] = h[:hgnc_id] unless h[:hgnc_id] == ""
+        @gene2extls[h[:gene_stable_id]] = h[:hgnc_id].sub("HGNC:", "") unless h[:hgnc_id] == ""
         unless h[:uniprotkb_swiss_prot_id] == ""
           if @transcript2extls.key?(h[:transcript_stable_id])
             @transcript2extls[h[:transcript_stable_id]] << h[:uniprotkb_swissprot_id]
@@ -209,7 +209,7 @@ module Ensembl
         print "    obo:RO_0002162 taxon:9606 ;\n"
         if @gene2extls.key?(gene_id)
           print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ,\n"
-          print "                 hgnc:HGNC_#{@gene2extls[gene_id]} ;\n"
+          print "                 hgnc:#{@gene2extls[gene_id]} ;\n"
         else
           print "    rdfs:seeAlso <http://identifiers.org/ensembl/#{gene_id}> ;\n"
         end

@@ -128,9 +128,9 @@ module Ensembl
         @gene2extls[h[:gene_stable_id]] = h[:hgnc_id].sub("HGNC:", "") unless h[:hgnc_id] == ""
         unless h[:uniprotkb_swiss_prot_id] == ""
           if @transcript2extls.key?(h[:transcript_stable_id])
-            @transcript2extls[h[:transcript_stable_id]] << h[:uniprotkb_swissprot_id]
+            @transcript2extls[h[:transcript_stable_id]] << h[:uniprotkb_swiss_prot_id]
           else
-            @transcript2extls[h[:transcript_stable_id]] = [h[:uniprotkb_swissprot_id]]
+            @transcript2extls[h[:transcript_stable_id]] = [h[:uniprotkb_swiss_prot_id]]
           end
         end
         unless h[:uniprotkb_trembl_id] == ""
